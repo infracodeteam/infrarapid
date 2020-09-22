@@ -7,13 +7,13 @@ Infrarapid is a tool to generate terraform templates for your infrastructure
 - Clone the repo:
 
 ```bash
-git clone https://github.com/infracodeteam/pytemplate.git
-cd pytemplate
+git clone https://github.com/infracodeteam/infrarapid.git
+cd infrarapid
 ```
 
 - Create a configuration file, you can find examples in
-[`examples`](https://github.com/infracodeteam/pytemplate/tree/master/examples) folder
-- Let's use [`aws-lite.yaml`](https://github.com/infracodeteam/pytemplate/blob/master/examples/aws-lite.yaml) file from examples:
+[`examples`](https://github.com/infracodeteam/infrarapid/tree/master/examples) folder
+- Let's use [`aws-lite.yaml`](https://github.com/infracodeteam/infrarapid/blob/master/examples/aws-lite.yaml) file from examples:
 - Run the script
 
 ```bash
