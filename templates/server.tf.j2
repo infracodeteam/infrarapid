@@ -1,0 +1,38 @@
+{% for server in data.servers %}
+resource "aws_instance" "{{ server.name }}" {
+  count                       = {{ server.count }}
+  ami                         = var.ami_map[var.aws_region]["{{ server.os }}"]["ami"]
+  instance_type               = "{{ server.instance_type }}"
+  subnet_id                   = aws_subnet.{{ server.subnet }}.id
+  key_name                    = aws_key_pair.keypair.id
+  vpc_security_group_ids      = [aws_security_group.{{ server.name }}-security-group.id]
+  associate_public_ip_address = true
+  source_dest_check           = false
+
+  tags = merge(var.server_additional_tags,
+    {
+        Name = format("{{ server.name }}-%d", count.index),
+        ManagedBy = "Infracode",
+    }
+  )
+
+{% if "local_command" in server %}
+  {# provisioner "local-exec" {
+    command = "{{ server.local_command }}"
+  } #}
+{% endif %}
+{% if "remote_command" in server %}
+    connection {
+        user        = var.ami_map[var.aws_region]["{{ server.os }}"]["user"]
+        type        = "ssh"
+        private_key = file(var.ssh_priv_key_path)
+        timeout     = "3m"
+        host        = self.public_ip
+    }
+
+    provisioner "remote-exec" {
+        inline = {{ server.remote_command }}
+    }
+{% endif %}
+}
+{% endfor %}

@@ -1,0 +1,56 @@
+---
+clouds:
+  aws:
+    region: "us-east-2"
+    vpc_network: 10.0.0.0/16
+    ssh_key_path: "~/.ssh/id_rsa.pub"
+
+    outputs:
+      - web.ip
+      - data.ip
+
+    servers:
+      - server: web
+        os: centos-7
+        size: t2.micro
+        count: 3
+        remote_command:
+          - sudo yum install -y docker
+          - sudo systemctl start docker
+          - sudo systemctl enable docker
+          - sudo docker run -d --name web -p 80:80 nginx
+        external_access:
+          - http
+          - https
+          - ssh
+          - ping
+        network: 10.0.0.0/24
+        elastic: true
+
+      - server: testserver
+        os: ubuntu-20.04
+        size: t2.micro
+        count: 1
+        remote_command:
+          - sudo apt-get update
+          - sudo apt-get install -y apache2
+          - sudo systemctl start apache2
+          - sudo systemctl enable apache2
+        external_access:
+          - ssh
+          - ping
+          - 80/tcp
+          - 5432/tcp
+        network: 10.0.0.0/24
+        elastic: true
+
+      # - server: database
+      #   os: centos-8
+      #   size: t2.micro
+      #   key: /path/to/key
+      #   count: 1
+      #   run_command:
+      #     - sudo apt-get update && sudo apt-get install postgresql
+      #   external_access: false
+      #   network: 10.0.1.0/24
+      #   elastic: false

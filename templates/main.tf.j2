@@ -1,0 +1,10 @@
+terraform {
+  required_version = ">= 0.12"
+}
+
+{% include "provider.tf.j2" %}
+
+{% include "network.tf.j2" %}
+{% include "keypair.tf.j2" %}
+{% include "server.tf.j2" %}
+{% include "outputs.tf.j2" %}

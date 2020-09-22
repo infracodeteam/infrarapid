@@ -1,0 +1,5 @@
+{% for server in data.servers %}
+output "{{ server.name }}-ip" {
+  value = aws_eip.{{ server.name }}-eip.*.public_ip
+}
+{% endfor %}

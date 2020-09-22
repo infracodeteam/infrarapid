@@ -1,0 +1,22 @@
+{% for server in data.servers %}
+resource "aws_security_group" "{{ server.name }}-security-group" {
+  name        = "{{ server.name }}-sg"
+  description = "Used in the terraform"
+  vpc_id      = aws_vpc.main.id
+{% for sec in server.security_groups %}
+  ingress {
+    from_port   = {{ sec.from_port }}
+    to_port     = {{ sec.to_port }}
+    protocol    = "{{ sec.protocol }}"
+    cidr_blocks = {{ sec.cidr_blocks }}
+  }
+{% endfor %}
+  # outbound internet access
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+{% endfor %}

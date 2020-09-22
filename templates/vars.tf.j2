@@ -1,0 +1,47 @@
+{# variable "access_key" {
+  description = "AWS Access Key"
+}
+
+variable "secret_key" {
+  description = "AWS Secret Key"
+} #}
+
+variable "aws_region" {
+  description = "AWS region"
+  type = string
+}
+
+variable "main_cidr" {
+    description = "VPC CIDR for main network"
+    type = string
+}
+
+variable "public_subnets" {
+    description = "CIDR blocks for public subnets"
+    type = list(string)
+}
+
+variable "ssh_key_path" {
+  description = "Path to the local public SSH key"
+  type     = string
+}
+
+variable "ssh_priv_key_path" {
+  description = "Path to the local private SSH key"
+  type     = string
+}
+
+variable "key_name" {
+  description = "SSH key pair name"
+  type     = string
+}
+
+variable "ami_map" {
+  description = "Amazon Image Ids Map"
+  type     = map
+}
+
+variable "server_additional_tags" {
+  description = "Tags for each server"
+  type     = map
+}

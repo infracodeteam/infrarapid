@@ -1,0 +1,45 @@
+aws_region = "{{ data.provider.region }}"
+main_cidr = "{{ data.provider.vpc_network }}"
+public_subnets = {{ data.provider.public_subnets }}
+ssh_key_path = "{{ data.provider.ssh_key_path }}"
+ssh_priv_key_path = "{{ data.provider.ssh_key_path | replace('.pub', '') }}"
+key_name = "mykey"
+server_additional_tags = {}
+ami_map = {
+    "us-east-2" = {
+        "ubuntu-16.04" = {
+            ami = "ami-0abeba7c3a37efd80"
+            user = "ubuntu"
+        },
+        "ubuntu-20.04" = {
+            ami = "ami-07efac79022b86107"
+            user = "ubuntu"
+        },
+        "centos-7" = {
+            ami = "ami-0a75b786d9a7f8144"
+            user = "centos"
+        },
+        "centos-8" = {
+            ami = "ami-000e7ce4dd68e7a11"
+            user = "centos"
+        },
+    },
+    "us-east-1" = {
+        "ubuntu-16.04" = {
+            ami = "ami-07a985bed28dfbc01"
+            user = "ubuntu"
+        },
+        "ubuntu-20.04" = {
+            ami = "ami-0dba2cb6798deb6d8"
+            user = "ubuntu"
+        },
+        "centos-7" = {
+            ami = "ami-06cf02a98a61f9f5e"
+            user = "centos"
+        },
+        "centos-8" = {
+            ami = "ami-01ca03df4a6012157"
+            user = "centos"
+        },
+    }
+}
