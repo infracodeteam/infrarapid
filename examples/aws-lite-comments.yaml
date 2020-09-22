@@ -1,0 +1,41 @@
+---
+clouds: # A general tag that indicates the start of cloud configurations.
+  aws: # AWS cloud shall be used here and it's configurations are as below.
+    region: "us-east-2" # Indicates the region where your infrasrtructure will be deployed.
+                        # Change the value here as per your requirement. Example- us-east-1, us-west-1, af-south-1.
+    vpc_network: 10.0.0.0/16 # Indicates the IP range of the virtual private cloud.
+    ssh_key_path: "~/.ssh/id_rsa.pub" # This is the key path for your public SSH keys.
+    # If the keys are not present here, please update the path to your SSH key path on your local system.
+    # Password protected keys are not supported at this moment.
+
+    outputs: # Defines what kind of output should be generated on the cloud server. Example- web, data, etc.
+      # Example usage as seen below:
+      - web.ip
+      - data.ip
+
+    servers: # Defining the server configurations that need to be deployed on cloud.
+      - server: web # Here the value defines the name of server that needs to be deployed.
+                    # Example - Web server, application server, communications server, etc.
+        os: centos-7 # What operating system should be hosted on your server.
+                     # Example - Centos-7, Ubuntu-20.04, RHEL 8, etc.
+        size: t2.micro # Size here will indicate the instance type that needs to be allocated on the cloud.
+                       # t2.micro will mean that 1 virtual CPU and 1 GiB of memory will be allocated.
+                       # Example - t2.micro, t2.nano, t2.medium, etc.
+        count: 3 # Count to mention the number of servers.
+        remote_command: # Defines the set of remote commands that need to run on your server.
+                        # For example: docker, Nginx server, apache server etc., as per your infrasrtructure needs.
+          # Example usage as shown below:
+          - sudo yum install -y docker
+          - sudo systemctl start docker
+          - sudo systemctl enable docker
+        external_access: # All the external access that needs to be allowed to access your server.
+                         # Example - http, ssh, ping, tcp, etc.
+          # Example usage as seen below:
+          - http
+          - https
+          - ssh
+          - ping
+        network: 10.0.0.0/24 # Indicates the IP range of subnet where server is deployed in.
+                             # It should be subset of VPC network above.
+        elastic: true # By setting the value for elastic to true you are ensuring that any failure of an instance can be
+                      # covered up by automatically reassigning the failed address to a different instance.
