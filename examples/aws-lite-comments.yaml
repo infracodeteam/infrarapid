@@ -23,7 +23,7 @@ clouds: # A general tag that indicates the start of cloud configurations.
                        # Example - t2.micro, t2.nano, t2.medium, etc.
         count: 3 # Count to mention the number of servers.
         remote_command: # Defines the set of remote commands that need to run on your server.
-                        # For example: docker, Nginx server, apache server etc., as per your infrasrtructure needs.
+                        # For example: docker, Nginx server, apache server etc., as per your infrastructure needs.
           # Example usage as shown below:
           - sudo yum install -y docker
           - sudo systemctl start docker
