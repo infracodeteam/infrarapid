@@ -1,7 +1,7 @@
 ---
 clouds: # A general tag that indicates the start of cloud configurations.
   aws: # AWS cloud shall be used here and it's configurations are as below.
-    region: "us-east-2" # Indicates the region where your infrasrtructure will be deployed.
+    region: "us-east-2" # Indicates the region where your infrastructure will be deployed.
                         # Change the value here as per your requirement. Example- us-east-1, us-west-1, af-south-1.
     vpc_network: 10.0.0.0/16 # Indicates the IP range of the virtual private cloud.
     ssh_key_path: "~/.ssh/id_rsa.pub" # This is the key path for your public SSH keys.
