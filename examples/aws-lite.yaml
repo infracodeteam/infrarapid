@@ -26,6 +26,9 @@ clouds:
           - ping
         network: 10.0.0.0/24
         elastic: true
+        tags:
+          "Server Role": "Web-server"
+          OS: "CentOS-7"
 
       - server: testserver
         os: ubuntu-20.04

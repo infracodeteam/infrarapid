@@ -12,7 +12,8 @@ resource "aws_instance" "{{ server.name }}" {
   tags = merge(var.server_additional_tags,
     {
         Name = format("{{ server.name }}-%d", count.index),
-        ManagedBy = "Infracode",
+        ManagedBy = "Infracode",{% if server.tags %}
+{{ server.tags }}{% endif %}
     }
   )
 
