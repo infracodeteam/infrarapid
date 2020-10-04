@@ -6,6 +6,8 @@ import os
 import yaml
 from jinja2 import FileSystemLoader, Environment
 
+from library import utils
+
 env = Environment(loader=FileSystemLoader('templates'))
 SERVICES = {
     'http': ('80', 'tcp'),
@@ -71,6 +73,9 @@ class ParseConfig:
                         'cidr_blocks': json.dumps(['0.0.0.0/0'])
                     }
                     for p in ports]
+            if 'tags' in s:
+                server['tags'] = utils.dict2hcl(
+                    s['tags'], tabs=8, only_values=True)
             servers.append(server)
         return {'servers': servers, 'provider': provider}
 
