@@ -33,5 +33,5 @@ terraform plan
 If everything is ok, run `terraform apply` to apply the configuration.
 
 ```bash
-terraform appply
+terraform apply
 ```
