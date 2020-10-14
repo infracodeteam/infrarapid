@@ -1,0 +1,9 @@
+clouds:
+  azure:
+    region: "us-east-2"
+    vpc_network: 10.0.0.0/16
+    ssh_key_path: "~/.ssh/id_rsa.pub"
+
+    outputs:
+      - web.ip
+      - data.ip

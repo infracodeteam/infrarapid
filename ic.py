@@ -43,12 +43,13 @@ class ParseConfig:
         provider['region'] = self.data['region']
         provider['vpc_network'] = self.data['vpc_network']
         provider['ssh_key_path'] = self.data['ssh_key_path']
-        subnets_servers = [s['network'] for s in self.data['servers']]
+        data_servers = self.data.get('servers', [])
+        subnets_servers = [s['network'] for s in data_servers]
         provider['public_subnets'] = json.dumps(list({
-            s['network'] for s in self.data['servers']
+            s['network'] for s in data_servers
             if bool(s['external_access'])}))
 
-        for s in self.data['servers']:
+        for s in data_servers:
             server = {}
             server['name'] = s['server']
             server['count'] = s['count']
@@ -109,17 +110,54 @@ class AwsLite:
             f.write(template.render(data=self.parsed))
 
 
-parser = argparse.ArgumentParser(description='InfraCode')
-parser.add_argument('-c', '--config-file', required=True,
-                    type=argparse.FileType('r'),
-                    help='Path to configuration file',)
-parser.add_argument('-t', '--templates-path', default=".", type=str,
-                    help="Path to generated templates")
-args = parser.parse_args()
-initialize_directories(args.templates_path)
-clouds = load_config(args.config_file)['clouds']
+class AzureLite:
 
-for cloud in clouds:
-    if cloud == 'aws':
-        aws = AwsLite(clouds[cloud])
-        aws.generate(args.templates_path)
+    def __init__(self, data):
+        self.cloud = data
+        self.prefix = "azure"
+        self.parsed = ParseConfig(self.cloud).run()
+
+    def generate(self, path):
+        self.generate_vars(path)
+        self.generate_var_values(path)
+        self.generate_templates(path)
+
+    def generate_vars(self, path):
+        template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
+        with open(os.path.join(path, "vars.tf"), "w") as f:
+            f.write(template.render(data=self.parsed))
+
+    def generate_var_values(self, path):
+        template = env.get_template(os.path.join(self.prefix,
+                                                 'terraform.tfvars.j2'))
+        with open(os.path.join(path, "terraform.tfvars"), "w") as f:
+            f.write(template.render(data=self.parsed))
+
+    def generate_templates(self, path):
+        template = env.get_template(os.path.join(self.prefix, 'main.tf.j2'))
+        with open(os.path.join(path, "main.tf"), "w") as f:
+            f.write(template.render(data=self.parsed))
+
+
+def main():
+    parser = argparse.ArgumentParser(description='InfraCode')
+    parser.add_argument('-c', '--config-file', required=True,
+                        type=argparse.FileType('r'),
+                        help='Path to configuration file',)
+    parser.add_argument('-t', '--templates-path', default=".", type=str,
+                        help="Path to generated templates")
+    args = parser.parse_args()
+    initialize_directories(args.templates_path)
+    clouds = load_config(args.config_file)['clouds']
+
+    for cloud in clouds:
+        if cloud == 'aws':
+            aws = AwsLite(clouds[cloud])
+            aws.generate(args.templates_path)
+        if cloud == 'azure':
+            azure = AzureLite(clouds[cloud])
+            azure.generate(args.templates_path)
+
+
+if __name__ == '__main__':
+    main()
