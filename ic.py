@@ -84,6 +84,7 @@ class AwsLite:
 
     def __init__(self, data):
         self.cloud = data
+        self.prefix = "aws"
         self.parsed = ParseConfig(self.cloud).run()
 
     def generate(self, path):
@@ -92,17 +93,18 @@ class AwsLite:
         self.generate_templates(path)
 
     def generate_vars(self, path):
-        template = env.get_template('vars.tf.j2')
+        template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
         with open(os.path.join(path, "vars.tf"), "w") as f:
             f.write(template.render(data=self.parsed))
 
     def generate_var_values(self, path):
-        template = env.get_template('terraform.tfvars.j2')
+        template = env.get_template(os.path.join(self.prefix,
+                                                 'terraform.tfvars.j2'))
         with open(os.path.join(path, "terraform.tfvars"), "w") as f:
             f.write(template.render(data=self.parsed))
 
     def generate_templates(self, path):
-        template = env.get_template('main.tf.j2')
+        template = env.get_template(os.path.join(self.prefix, 'main.tf.j2'))
         with open(os.path.join(path, "main.tf"), "w") as f:
             f.write(template.render(data=self.parsed))
 
