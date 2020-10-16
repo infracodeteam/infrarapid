@@ -1,1 +1,3 @@
 azure_location = "eastus"
+main_cidr = ["{{ data.provider.vpc_network }}"]
+public_subnets = {{ data.provider.public_subnets }}
