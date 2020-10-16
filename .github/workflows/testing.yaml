@@ -192,5 +192,11 @@ jobs:
       - name: Install test requirements
         run: python -m pip install -U -r requirements.txt -r test-requirements.txt
 
+      - name: Install AZ CLI
+        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
       - name: Run terraform tests
-        run: tox -eterraform-azure
+        run: |
+          tox -eterraform-azure
+        env:
+          AZURE_SUB_ID: ${{ secrets.AZURE_SUB_ID }}

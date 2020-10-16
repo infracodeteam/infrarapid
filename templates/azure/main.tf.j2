@@ -8,3 +8,5 @@ resource "azurerm_resource_group" "infracode" {
     name = "ManagedByInfracode"
     location = var.azure_location
 }
+
+{% include "azure/network.tf.j2" %}

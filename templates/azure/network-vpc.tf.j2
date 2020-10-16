@@ -1,0 +1,17 @@
+# Create a VPC to launch our instances into
+resource "azurerm_virtual_network" "main" {
+    name                = "main"
+    location            = var.azure_location
+    address_space       = var.main_cidr
+    resource_group_name = azurerm_resource_group.infracode.name
+    tags = {
+    }
+}
+
+resource "azurerm_subnet" "public-subnet" {
+    name                 = format("public-subnet-%d", count.index)
+    resource_group_name  = azurerm_resource_group.infracode.name
+    virtual_network_name = azurerm_virtual_network.main.name
+    count = length(var.public_subnets)
+    address_prefixes = [var.public_subnets[count.index]]
+}
