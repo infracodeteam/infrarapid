@@ -193,4 +193,5 @@ jobs:
         run: python -m pip install -U -r requirements.txt -r test-requirements.txt
 
       - name: Run terraform tests
-        run: tox -eterraform-azure
+        run: |
+          tox -eterraform-azure

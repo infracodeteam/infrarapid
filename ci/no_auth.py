@@ -9,6 +9,11 @@ AWS = """
   access_key                  = "mock_access_key"
   secret_key                  = "mock_secret_key"
 """
+AZURE = """
+    skip_credentials_validation = true
+    skip_provider_registration = true
+"""
+
 PROVIDER_FILE = sys.argv[1] if len(sys.argv) > 1 else "main.tf"
 
 with open(PROVIDER_FILE) as f:
@@ -17,6 +22,8 @@ with open(PROVIDER_FILE) as f:
         new_lines.append(line)
         if 'provider "aws"' in line:
             new_lines.append(AWS)
+        if 'provider "azurerm"' in line:
+            new_lines.append(AZURE)
 
 with open(PROVIDER_FILE, "w") as f:
     f.writelines(new_lines)
