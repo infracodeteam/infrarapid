@@ -8,7 +8,7 @@ resource "aws_security_group" "{{ server.name }}-security-group" {
     from_port   = {{ sec.from_port }}
     to_port     = {{ sec.to_port }}
     protocol    = "{{ sec.protocol }}"
-    cidr_blocks = {{ sec.cidr_blocks }}
+    cidr_blocks = {{ sec.cidr_blocks|tojson }}
   }
 {% endfor %}
   # outbound internet access
