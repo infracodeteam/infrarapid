@@ -1,0 +1,5 @@
+{% for server in data.servers %}
+output "{{ server.name }}-ip" {
+  value = azurerm_public_ip.{{ server.name }}-public-ip.*.ip_address
+}
+{% endfor %}
