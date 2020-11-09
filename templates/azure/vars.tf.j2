@@ -22,3 +22,18 @@ variable "subscription_id" {
   description = "Azure region"
   type = string
 }
+
+variable "ssh_key_path" {
+  description = "Path to the local public SSH key"
+  type     = string
+}
+
+variable "ssh_priv_key_path" {
+  description = "Path to the local private SSH key"
+  type     = string
+}
+
+variable "server_additional_tags" {
+  description = "Tags for each server"
+  type     = map
+}

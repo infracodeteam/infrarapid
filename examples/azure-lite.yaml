@@ -11,7 +11,7 @@ clouds:
     servers:
       - server: web
         os: centos-7
-        size: t2.micro
+        size: Standard_F2
         count: 3
         remote_command:
           - sudo yum install -y docker
@@ -31,7 +31,7 @@ clouds:
 
       - server: testserver
         os: ubuntu-20.04
-        size: t2.micro
+        size: Standard_F2
         count: 1
         remote_command:
           - sudo apt-get update
