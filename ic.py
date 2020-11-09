@@ -71,7 +71,7 @@ class ParseConfig:
                         'from_port': p[0],
                         'to_port': p[0],
                         'protocol': p[1],
-                        'cidr_blocks': json.dumps(['0.0.0.0/0'])
+                        'cidr_blocks': ['0.0.0.0/0']
                     }
                     for p in ports]
             if 'tags' in s:

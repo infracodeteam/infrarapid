@@ -1,0 +1,21 @@
+{% for server in data.servers %}
+resource "azurerm_network_security_group" "{{ server.name }}-security-group" {
+  name                = "{{ server.name }}-sg"
+  location            = var.azure_location
+  resource_group_name = azurerm_resource_group.infracode.name
+{% for sec in server.security_groups %}
+  security_rule {
+    name                       = "test123"
+    priority                   = {{ 100 + loop.index * 10 }}
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "{{ sec.protocol }}"
+    source_port_range          = "*"
+    destination_port_range     = "{{ sec.to_port }}"
+    source_address_prefix      = "{{ sec.cidr_blocks.0 }}"
+    destination_address_prefix = "*"
+  }
+{% endfor %}
+
+}
+{% endfor %}
