@@ -1,0 +1,56 @@
+{% for server in data.servers %}
+resource "azurerm_linux_virtual_machine" "{{ server.name }}" {
+  name                = format("{{ server.name }}-%d", count.index)
+  count               = {{ server.count }}
+  location            = var.azure_location
+  resource_group_name = azurerm_resource_group.infracode.name
+  size                = "{{ server.instance_type }}"
+  admin_username      = "ubuntu"
+  network_interface_ids = [
+    azurerm_network_interface.{{ server.name }}-network-int[count.index].id
+  ]
+
+  admin_ssh_key {
+    username   = "ubuntu"
+    public_key = file(var.ssh_key_path)
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "16.04-LTS"
+    version   = "latest"
+  }
+
+   tags = merge(var.server_additional_tags,
+    {
+        Name = format("{{ server.name }}-%d", count.index),
+        ManagedBy = "Infracode",{% if server.tags %}
+{{ server.tags }}{% endif %}
+    }
+  )
+        {% if "local_command" in server %}
+  {# provisioner "local-exec" {
+    command = "{{ server.local_command }}"
+  } #}
+{% endif %}
+{% if "remote_command" in server %}
+    connection {
+        user        = "ubuntu"
+        type        = "ssh"
+        private_key = file(var.ssh_priv_key_path)
+        timeout     = "3m"
+        host        = self.public_ip_address
+    }
+
+    provisioner "remote-exec" {
+        inline = {{ server.remote_command }}
+    }
+{% endif %}
+}
+{% endfor %}
