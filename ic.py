@@ -89,24 +89,22 @@ class CloudGen:
         self.parsed = ParseConfig(self.cloud).run()
 
     def generate(self, path):
-        text = self.generate_vars()
-        with open(os.path.join(path, "vars.tf"), "w") as f:
-            f.write(text)
-        text = self.generate_var_values()
-        with open(os.path.join(path, "terraform.tfvars"), "w") as f:
-            f.write(text)
-        text = self.generate_templates()
-        with open(os.path.join(path, "main.tf"), "w") as f:
-            f.write(text)
+        for text, filename in (
+            (self.generate_vars(), "vars.tf"),
+            (self.generate_var_values(), "terraform.tfvars"),
+            (self.generate_templates(), "main.tf")
+        ):
+            with open(os.path.join(path, filename), "w") as f:
+                f.write(text)
 
     def generate_text(self):
         tf_vars = self.generate_vars()
         values = self.generate_var_values()
         templates = self.generate_templates()
         return {
-            'vars': tf_vars,
-            'values': values,
-            'templates': templates
+            "vars.tf": tf_vars,
+            "terraform.tfvars": values,
+            "main.tf": templates
         }
 
     def generate_vars(self):
