@@ -93,21 +93,44 @@ class AwsLite:
         self.generate_var_values(path)
         self.generate_templates(path)
 
-    def generate_vars(self, path):
-        template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
-        with open(os.path.join(path, "vars.tf"), "w") as f:
-            f.write(template.render(data=self.parsed))
+    def generate_text(self):
+        vars = self.generate_vars()
+        values = self.generate_var_values()
+        templates = self.generate_templates()
+        return {
+            'vars': vars,
+            'values': values,
+            'templates': templates
+        }
 
-    def generate_var_values(self, path):
+    def generate_vars(self, path=None):
+        template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
+        text = template.render(data=self.parsed)
+        if path:
+            with open(os.path.join(path, "vars.tf"), "w") as f:
+                f.write(text)
+        else:
+            return text
+
+    def generate_var_values(self, path=None):
         template = env.get_template(os.path.join(self.prefix,
                                                  'terraform.tfvars.j2'))
-        with open(os.path.join(path, "terraform.tfvars"), "w") as f:
-            f.write(template.render(data=self.parsed))
+        text = template.render(data=self.parsed)
+        if path:
+            with open(os.path.join(path, "terraform.tfvars"), "w") as f:
+                f.write(text)
+        else:
+            return text
 
-    def generate_templates(self, path):
+
+    def generate_templates(self, path=None):
         template = env.get_template(os.path.join(self.prefix, 'main.tf.j2'))
-        with open(os.path.join(path, "main.tf"), "w") as f:
-            f.write(template.render(data=self.parsed))
+        text = template.render(data=self.parsed)
+        if path:
+            with open(os.path.join(path, "main.tf"), "w") as f:
+                f.write(text)
+        else:
+            return text
 
 
 class AzureLite:
@@ -122,21 +145,62 @@ class AzureLite:
         self.generate_var_values(path)
         self.generate_templates(path)
 
-    def generate_vars(self, path):
-        template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
-        with open(os.path.join(path, "vars.tf"), "w") as f:
-            f.write(template.render(data=self.parsed))
+    def generate_text(self):
+        vars = self.generate_vars()
+        values = self.generate_var_values()
+        templates = self.generate_templates()
+        return {
+            'vars': vars,
+            'values': values,
+            'templates': templates
+        }
 
-    def generate_var_values(self, path):
+    def generate_vars(self, path=None):
+        template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
+        text = template.render(data=self.parsed)
+        if path:
+            with open(os.path.join(path, "vars.tf"), "w") as f:
+                f.write(text)
+        else:
+            return text
+
+    def generate_var_values(self, path=None):
         template = env.get_template(os.path.join(self.prefix,
                                                  'terraform.tfvars.j2'))
-        with open(os.path.join(path, "terraform.tfvars"), "w") as f:
-            f.write(template.render(data=self.parsed))
+        text = template.render(data=self.parsed)
+        if path:
+            with open(os.path.join(path, "terraform.tfvars"), "w") as f:
+                f.write(text)
+        else:
+            return text
 
-    def generate_templates(self, path):
+    def generate_templates(self, path=None):
         template = env.get_template(os.path.join(self.prefix, 'main.tf.j2'))
-        with open(os.path.join(path, "main.tf"), "w") as f:
-            f.write(template.render(data=self.parsed))
+        text = template.render(data=self.parsed)
+        if path:
+            with open(os.path.join(path, "main.tf"), "w") as f:
+                f.write(text)
+        else:
+            return text
+
+
+class TopologyObject:
+    def __init__(self, data, azure=True, aws=True):
+        self.data = data
+        self.azure = azure
+        self.aws = aws
+        if azure:
+            self.az = AzureLite(self.data)
+        if aws:
+            self.aw = AwsLite(self.data)
+
+    def generate_templates(self):
+        result = {}
+        if self.azure:
+            result['azure'] = self.az.generate_text()
+        if self.aws:
+            result['aws'] = self.aw.generate_text()
+        return result
 
 
 def main():
