@@ -81,11 +81,11 @@ class ParseConfig:
         return {'servers': servers, 'provider': provider}
 
 
-class AwsLite:
+class CloudGen:
+    prefix = None
 
     def __init__(self, data):
         self.cloud = data
-        self.prefix = "aws"
         self.parsed = ParseConfig(self.cloud).run()
 
     def generate(self, path):
@@ -94,11 +94,11 @@ class AwsLite:
         self.generate_templates(path)
 
     def generate_text(self):
-        vars = self.generate_vars()
+        tf_vars = self.generate_vars()
         values = self.generate_var_values()
         templates = self.generate_templates()
         return {
-            'vars': vars,
+            'vars': tf_vars,
             'values': values,
             'templates': templates
         }
@@ -122,7 +122,6 @@ class AwsLite:
         else:
             return text
 
-
     def generate_templates(self, path=None):
         template = env.get_template(os.path.join(self.prefix, 'main.tf.j2'))
         text = template.render(data=self.parsed)
@@ -133,55 +132,18 @@ class AwsLite:
             return text
 
 
-class AzureLite:
+class AwsLite(CloudGen):
 
     def __init__(self, data):
-        self.cloud = data
+        super().__init__(data)
+        self.prefix =  "aws"
+
+
+class AzureLite(CloudGen):
+
+    def __init__(self, data):
+        super().__init__(data)
         self.prefix = "azure"
-        self.parsed = ParseConfig(self.cloud).run()
-
-    def generate(self, path):
-        self.generate_vars(path)
-        self.generate_var_values(path)
-        self.generate_templates(path)
-
-    def generate_text(self):
-        vars = self.generate_vars()
-        values = self.generate_var_values()
-        templates = self.generate_templates()
-        return {
-            'vars': vars,
-            'values': values,
-            'templates': templates
-        }
-
-    def generate_vars(self, path=None):
-        template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
-        text = template.render(data=self.parsed)
-        if path:
-            with open(os.path.join(path, "vars.tf"), "w") as f:
-                f.write(text)
-        else:
-            return text
-
-    def generate_var_values(self, path=None):
-        template = env.get_template(os.path.join(self.prefix,
-                                                 'terraform.tfvars.j2'))
-        text = template.render(data=self.parsed)
-        if path:
-            with open(os.path.join(path, "terraform.tfvars"), "w") as f:
-                f.write(text)
-        else:
-            return text
-
-    def generate_templates(self, path=None):
-        template = env.get_template(os.path.join(self.prefix, 'main.tf.j2'))
-        text = template.render(data=self.parsed)
-        if path:
-            with open(os.path.join(path, "main.tf"), "w") as f:
-                f.write(text)
-        else:
-            return text
 
 
 class TopologyObject:
