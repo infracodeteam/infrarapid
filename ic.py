@@ -89,9 +89,15 @@ class CloudGen:
         self.parsed = ParseConfig(self.cloud).run()
 
     def generate(self, path):
-        self.generate_vars(path)
-        self.generate_var_values(path)
-        self.generate_templates(path)
+        text = self.generate_vars()
+        with open(os.path.join(path, "vars.tf"), "w") as f:
+            f.write(text)
+        text = self.generate_var_values()
+        with open(os.path.join(path, "terraform.tfvars"), "w") as f:
+            f.write(text)
+        text = self.generate_templates()
+        with open(os.path.join(path, "main.tf"), "w") as f:
+            f.write(text)
 
     def generate_text(self):
         tf_vars = self.generate_vars()
@@ -103,40 +109,28 @@ class CloudGen:
             'templates': templates
         }
 
-    def generate_vars(self, path=None):
+    def generate_vars(self):
         template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
         text = template.render(data=self.parsed)
-        if path:
-            with open(os.path.join(path, "vars.tf"), "w") as f:
-                f.write(text)
-        else:
-            return text
+        return text
 
-    def generate_var_values(self, path=None):
+    def generate_var_values(self):
         template = env.get_template(os.path.join(self.prefix,
                                                  'terraform.tfvars.j2'))
         text = template.render(data=self.parsed)
-        if path:
-            with open(os.path.join(path, "terraform.tfvars"), "w") as f:
-                f.write(text)
-        else:
-            return text
+        return text
 
-    def generate_templates(self, path=None):
+    def generate_templates(self):
         template = env.get_template(os.path.join(self.prefix, 'main.tf.j2'))
         text = template.render(data=self.parsed)
-        if path:
-            with open(os.path.join(path, "main.tf"), "w") as f:
-                f.write(text)
-        else:
-            return text
+        return text
 
 
 class AwsLite(CloudGen):
 
     def __init__(self, data):
         super().__init__(data)
-        self.prefix =  "aws"
+        self.prefix = "aws"
 
 
 class AzureLite(CloudGen):
