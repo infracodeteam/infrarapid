@@ -1,7 +1,7 @@
 {% for server in data.servers %}
 resource "aws_instance" "{{ server.name }}" {
   count                       = {{ server.count }}
-  ami                         = var.ami_map[var.aws_region]["{{ server.os }}"]["ami"]
+  ami                         = data.aws_ami.search.id
   instance_type               = "{{ server.instance_type }}"
   subnet_id                   = aws_subnet.{{ server.subnet }}.id
   key_name                    = aws_key_pair.keypair.id
@@ -24,7 +24,7 @@ resource "aws_instance" "{{ server.name }}" {
 {% endif %}
 {% if "remote_command" in server %}
     connection {
-        user        = var.ami_map[var.aws_region]["{{ server.os }}"]["user"]
+        user        = var.ami_user_map["{{ server.os }}"]
         type        = "ssh"
         private_key = file(var.ssh_priv_key_path)
         timeout     = "3m"
