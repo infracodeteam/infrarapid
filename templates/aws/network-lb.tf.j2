@@ -1,0 +1,39 @@
+{% for lb in data.provider.lb  %}
+resource "aws_elb" "{{ lb.server }}_lb" {
+  name               = "{{ lb.name }}"
+
+{% for listener in lb.listeners  %}
+  listener {
+    instance_port     = {{ listener.instance_port }}
+    instance_protocol = "{{ listener.instance_protocol }}"
+    lb_port           = {{ listener.lb_port }}
+    lb_protocol       = "{{ listener.lb_protocol }}"
+  }
+{% endfor %}
+{% for health_check in lb.health_check  %}
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "{{ health_check }}"
+    interval            = 30
+  }
+{% endfor %}
+  instances                   = aws_instance.{{ lb.server }}.*.id
+  security_groups             = [aws_security_group.{{ lb.server }}-security-group.id]
+  subnets                     = [aws_subnet.public-subnet[0].id]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+
+  tags = {
+    Name = "{{ lb.name }}"
+  }
+}
+
+output "load_balancer_dns_name" {
+  description = "The DNS name of the load balancer."
+  value       = concat(aws_elb.{{ lb.server }}_lb.*.dns_name, [""])[0]
+}
+{% endfor %}

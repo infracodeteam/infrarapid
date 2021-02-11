@@ -15,6 +15,10 @@ SERVICES = {
     'ping': ('-1', 'icmp'),
     'ssh': ('22', 'tcp'),
 }
+PORT2PROTOCOL = {
+    '80': 'http',
+    '443': 'https'
+}
 
 
 def load_config(config):
@@ -31,6 +35,13 @@ def initialize_directories(path):
             raise e
 
 
+def port2protocol(port):
+    port = str(port)
+    if port not in PORT2PROTOCOL:
+        return 'tcp'
+    return PORT2PROTOCOL[port]
+
+
 class ParseConfig:
 
     def __init__(self, data):
@@ -40,6 +51,7 @@ class ParseConfig:
     def run(self):
         servers = []
         provider = {}
+        provider['lb'] = []
         provider['region'] = self.data['region']
         provider['vpc_network'] = self.data['vpc_network']
         provider['ssh_key_path'] = self.data['ssh_key_path']
@@ -77,6 +89,30 @@ class ParseConfig:
             if 'tags' in s:
                 server['tags'] = utils.dict2hcl(
                     s['tags'], tabs=8, only_values=True)
+            if 'load_balancer' in s:
+                listeners = []
+                health_check = []
+                for lis in s['load_balancer']['listeners']:
+                    inst_port, lb_port = list(lis.items())[0]
+                    listener = {
+                        'instance_port': inst_port,
+                        'instance_protocol': port2protocol(inst_port),
+                        'lb_port': lb_port,
+                        'lb_protocol': port2protocol(lb_port),
+                    }
+                    listeners.append(listener)
+                if 'health' in s['load_balancer']:
+                    hch = s['load_balancer']['health']
+                    h_check = hch['protocol'] + ":" + hch['port'] + hch['path']
+                    health_check.append(h_check)
+                lb = {
+                    'name': server['name'].replace(
+                        "_", "-") + '-load-balancer',
+                    'server': server['name'],
+                    'listeners': listeners,
+                    'health_check': health_check,
+                }
+                provider['lb'].append(lb)
             servers.append(server)
         return {'servers': servers, 'provider': provider}
 
