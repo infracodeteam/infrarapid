@@ -1,0 +1,41 @@
+---
+clouds:
+  aws:
+    region: "us-west-2"
+    vpc_network: 10.0.0.0/16
+    ssh_key_path: "~/.ssh/id_rsa.pub"
+
+    servers:
+      - server: web
+        os: ubuntu-20.04
+        size: t2.micro
+        count: 3
+        remote_command:
+          - sudo apt-get update
+          - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          - sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable'
+          - sudo apt-get update
+          - sudo apt install docker-ce -y
+          - sudo usermod -aG docker `whoami`
+          - sudo systemctl start docker
+          - sudo systemctl enable docker
+          - sudo mkdir /opt/html
+          - echo \"<h1>This is a server</h1>\" | sudo tee /opt/html/index.html
+          - sudo docker run -d --name web -v /opt/html:/usr/share/nginx/html -p 8000:80 nginx
+        external_access:
+          - 8000/tcp
+          - ssh
+          - ping
+        network: 10.0.0.0/24
+        elastic: true
+        load_balancer:
+          listeners:
+            - 80: 8000  # instance_port: load_balancer_port
+            # - 443: 443  - requires SSL ceriticate ID
+          health:
+              port: "8000"
+              path: "/"
+              protocol: "HTTP"
+        tags:
+          "Server Role": "Web-server"
+          OS: "CentOS-7"
