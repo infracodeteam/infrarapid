@@ -56,10 +56,35 @@ class ParseConfig:
         provider['vpc_network'] = self.data['vpc_network']
         provider['ssh_key_path'] = self.data['ssh_key_path']
         data_servers = self.data.get('servers', [])
+        lbs = self.data.get('load_balancers', [])
         subnets_servers = [s['network'] for s in data_servers]
         provider['public_subnets'] = json.dumps(list({
             s['network'] for s in data_servers
             if bool(s['external_access'])}))
+
+        server_lbs = {}
+        for lb in lbs:
+            listeners = []
+            health_check = []
+            for lis in lb['listeners']:
+                inst_port, lb_port = list(lis.items())[0]
+                listener = {
+                    'instance_port': inst_port,
+                    'instance_protocol': port2protocol(inst_port),
+                    'lb_port': lb_port,
+                    'lb_protocol': port2protocol(lb_port),
+                }
+                listeners.append(listener)
+            if 'health' in lb:
+                hch = lb['health']
+                h_check = hch['protocol'] + ":" + hch['port'] + hch['path']
+                health_check.append(h_check)
+            lb = {
+                'name': lb['name'],
+                'listeners': listeners,
+                'health_check': health_check,
+            }
+            server_lbs[lb['name']] = lb
 
         for s in data_servers:
             server = {}
@@ -90,28 +115,8 @@ class ParseConfig:
                 server['tags'] = utils.dict2hcl(
                     s['tags'], tabs=8, only_values=True)
             if 'load_balancer' in s:
-                listeners = []
-                health_check = []
-                for lis in s['load_balancer']['listeners']:
-                    inst_port, lb_port = list(lis.items())[0]
-                    listener = {
-                        'instance_port': inst_port,
-                        'instance_protocol': port2protocol(inst_port),
-                        'lb_port': lb_port,
-                        'lb_protocol': port2protocol(lb_port),
-                    }
-                    listeners.append(listener)
-                if 'health' in s['load_balancer']:
-                    hch = s['load_balancer']['health']
-                    h_check = hch['protocol'] + ":" + hch['port'] + hch['path']
-                    health_check.append(h_check)
-                lb = {
-                    'name': server['name'].replace(
-                        "_", "-") + '-load-balancer',
-                    'server': server['name'],
-                    'listeners': listeners,
-                    'health_check': health_check,
-                }
+                lb = server_lbs[s['load_balancer']]
+                lb['server'] = server['name']
                 provider['lb'].append(lb)
             servers.append(server)
         return {'servers': servers, 'provider': provider}
@@ -126,9 +131,9 @@ class CloudGen:
 
     def generate(self, path):
         for text, filename in (
-            (self.generate_vars(), "vars.tf"),
-            (self.generate_var_values(), "terraform.tfvars"),
-            (self.generate_templates(), "main.tf")
+                (self.generate_vars(), "vars.tf"),
+                (self.generate_var_values(), "terraform.tfvars"),
+                (self.generate_templates(), "main.tf")
         ):
             with open(os.path.join(path, filename), "w") as f:
                 f.write(text)
@@ -197,7 +202,7 @@ def main():
     parser = argparse.ArgumentParser(description='InfraCode')
     parser.add_argument('-c', '--config-file', required=True,
                         type=argparse.FileType('r'),
-                        help='Path to configuration file',)
+                        help='Path to configuration file')
     parser.add_argument('-t', '--templates-path', default=".", type=str,
                         help="Path to generated templates")
     args = parser.parse_args()
