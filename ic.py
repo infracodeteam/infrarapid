@@ -8,7 +8,9 @@ from jinja2 import FileSystemLoader, Environment
 
 from library import utils
 
-env = Environment(loader=FileSystemLoader('templates'))
+env = Environment(
+    loader=FileSystemLoader(
+        os.path.join(os.path.dirname(__file__), 'templates')))
 SERVICES = {
     'http': ('80', 'tcp'),
     'https': ('443', 'tcp'),
@@ -149,18 +151,18 @@ class CloudGen:
         }
 
     def generate_vars(self):
-        template = env.get_template(os.path.join(self.prefix, 'vars.tf.j2'))
+        template = env.get_template("/".join((self.prefix, 'vars.tf.j2')))
         text = template.render(data=self.parsed)
         return text
 
     def generate_var_values(self):
-        template = env.get_template(os.path.join(self.prefix,
-                                                 'terraform.tfvars.j2'))
+        template = env.get_template("/".join((self.prefix,
+                                              'terraform.tfvars.j2')))
         text = template.render(data=self.parsed)
         return text
 
     def generate_templates(self):
-        template = env.get_template(os.path.join(self.prefix, 'main.tf.j2'))
+        template = env.get_template("/".join((self.prefix, 'main.tf.j2')))
         text = template.render(data=self.parsed)
         return text
 
