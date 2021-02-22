@@ -5,6 +5,16 @@ clouds:
     vpc_network: 10.0.0.0/16
     ssh_key_path: "~/.ssh/id_rsa.pub"
 
+    load_balancers:
+      - name: web_lb
+        listeners:
+          - 80: 8000  # instance_port: load_balancer_port
+          # - 443: 443  - requires SSL ceriticate ID
+        health:
+          port: "8000"
+          path: "/"
+          protocol: "HTTP"
+
     servers:
       - server: web
         os: ubuntu-20.04
@@ -28,14 +38,7 @@ clouds:
           - ping
         network: 10.0.0.0/24
         elastic: true
-        load_balancer:
-          listeners:
-            - 80: 8000  # instance_port: load_balancer_port
-            # - 443: 443  - requires SSL ceriticate ID
-          health:
-              port: "8000"
-              path: "/"
-              protocol: "HTTP"
+        load_balancer: web_lb
         tags:
           "Server Role": "Web-server"
           OS: "CentOS-7"
