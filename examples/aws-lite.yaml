@@ -9,8 +9,31 @@ clouds:
       - web.ip
       - data.ip
 
+    security_groups:
+      - web_sec:
+          - from: all
+            port: 80
+            protocol: tcp
+          - from: all
+            port: 443
+            protocol: tcp
+      - ping_sec:
+          - from: all
+            protocol: icmp
+      - database_sec:
+          - from: web_server
+            port: 3306
+            protocol: tcp
+          - from: web_server
+            port: 5432
+            protocol: tcp
+      - bastion_sec:
+          - from: all
+            port: 22
+            protocol: tcp
+
     servers:
-      - server: web
+      - server: web_server
         os: centos-7
         size: t2.micro
         count: 3
@@ -30,7 +53,7 @@ clouds:
           "Server Role": "Web-server"
           OS: "CentOS-7"
 
-      - server: testserver
+      - server: database
         os: ubuntu-20.04
         size: t2.micro
         count: 1
@@ -39,13 +62,12 @@ clouds:
           - sudo apt-get install -y apache2
           - sudo systemctl start apache2
           - sudo systemctl enable apache2
-        external_access:
-          - ssh
-          - ping
-          - 80/tcp
-          - 5432/tcp
-        network: 10.0.0.0/24
-        elastic: true
+        external_access: no
+        security_groups:
+          - database_sec
+        network: 10.0.2.0/24
+        network_type: private
+        elastic: false
 
       # - server: database
       #   os: centos-8
