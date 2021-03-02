@@ -7,8 +7,9 @@ resource "aws_security_group" "{{ server.name }}-security-group" {
   ingress {
     from_port   = {{ sec.from_port }}
     to_port     = {{ sec.to_port }}
-    protocol    = "{{ sec.protocol }}"
-    cidr_blocks = {{ sec.cidr_blocks|tojson }}
+    protocol    = "{{ sec.protocol }}"{% if sec.cidr_blocks %}
+    cidr_blocks = {{ sec.cidr_blocks|tojson }}{% endif %}{% if sec.security_groups %}
+    security_groups = [aws_security_group.{{ sec.security_groups }}.id]{% endif %}
   }
 {% endfor %}
   # outbound internet access

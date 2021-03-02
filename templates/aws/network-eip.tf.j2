@@ -1,8 +1,10 @@
 {% for server in data.servers %}
+{% if server.elastic %}
 resource "aws_eip" "{{ server.name }}-eip" {
   count      = {{ server.count }}
   vpc        = true
   instance   = aws_instance.{{ server.name }}[count.index].id
   depends_on = [aws_internet_gateway.router]
 }
+{% endif %}
 {% endfor %}

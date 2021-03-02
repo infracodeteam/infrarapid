@@ -62,10 +62,20 @@ class ParseConfig:
         provider['ssh_key_path'] = self.data['ssh_key_path']
         data_servers = self.data.get('servers', [])
         lbs = self.data.get('load_balancers', [])
-        subnets_servers = [s['network'] for s in data_servers]
+        pub_subnets_servers = [
+            s['network'] for s in data_servers
+            if s.get('network_type') != 'private'
+        ]
+        priv_subnets_servers = [
+            s['network'] for s in data_servers
+            if s.get('network_type') == 'private'
+        ]
         provider['public_subnets'] = json.dumps(list({
             s['network'] for s in data_servers
-            if bool(s['external_access'])}))
+            if s.get('network_type') != 'private' }))
+        provider['private_subnets'] = json.dumps(list({
+            s['network'] for s in data_servers
+            if s.get('network_type') == 'private'}))
 
         server_lbs = {}
         for lb in lbs:
@@ -97,25 +107,20 @@ class ParseConfig:
             server['count'] = s['count']
             server['instance_type'] = s['size']
             server['os'] = s['os']
+            server['elastic'] = bool(s.get('elastic'))
+            server['security_groups'] = []
             if 'remote_command' in s:
                 server['remote_command'] = json.dumps(s['remote_command'])
             if 'local_command' in s:
                 server['local_command'] = s['local_command']
-            subnet_index = subnets_servers.index(s['network'])
-            server['subnet'] = "public-subnet[%d]" % subnet_index
-            if 'external_access' in s:
-                ports = [SERVICES[p]
-                         for p in s['external_access'] if p in SERVICES]
-                ports += [p.split("/")
-                          for p in s['external_access'] if p not in SERVICES]
-                server['security_groups'] = [
-                    {
-                        'from_port': p[0],
-                        'to_port': p[0],
-                        'protocol': p[1],
-                        'cidr_blocks': ['0.0.0.0/0']
-                    }
-                    for p in ports]
+            if s.get('network_type') != 'private':
+                subnet_index = pub_subnets_servers.index(s['network'])
+                server['subnet'] = "public-subnet[%d]" % subnet_index
+                server['subnet_type'] = 'public'
+            else:
+                subnet_index = priv_subnets_servers.index(s['network'])
+                server['subnet'] = "private-subnet[%d]" % subnet_index
+                server['subnet_type'] = 'private'
             if 'tags' in s:
                 server['tags'] = utils.dict2hcl(
                     s['tags'], tabs=8, only_values=True)
@@ -123,6 +128,36 @@ class ParseConfig:
                 lb = server_lbs[s['load_balancer']]
                 lb['server'] = server['name']
                 provider['lb'].append(lb)
+
+            for rule in s.get('inbound_access', []):
+                sec_rule = {
+                    'protocol': rule.get('protocol', 'any'),
+                    'direction': 'ingress'}
+                ports = str(rule.get('port', ''))
+                if ports:
+                    if '-' in ports:
+                        (sec_rule['from_port'], sec_rule['to_port']
+                         ) = ports.split("-")
+                    else:
+                        sec_rule['from_port'] = sec_rule['to_port'] = ports
+                else:
+                    sec_rule['from_port'] = sec_rule['to_port'] = '0'
+                from_addr = rule.get('from')
+                if not from_addr or from_addr.lower() in ('all', 'any'):
+                    sec_rule['cidr_blocks'] = ['0.0.0.0/0']
+                elif from_addr in [i['server'] for i in data_servers]:
+                    sec_rule['security_groups'] = from_addr + '-security-group'
+                else:
+                    sec_rule['cidr_blocks'] = from_addr
+                # to_addr = rule.get('to')
+                # if not from_addr or from_addr.lower() in ('all', 'any'):
+                #     sec_rule['cidr_blocks'] = ['0.0.0.0/0']
+                # elif from_addr in data_servers:
+                #     sec_rule['security_groups'] = [
+                #         from_addr + '-security-group']
+                # else:
+                #     sec_rule['cidr_blocks'] = from_addr
+                server['security_groups'].append(sec_rule)
             servers.append(server)
         return {'servers': servers, 'provider': provider}
 
