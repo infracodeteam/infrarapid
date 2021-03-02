@@ -72,7 +72,7 @@ class ParseConfig:
         ]
         provider['public_subnets'] = json.dumps(list({
             s['network'] for s in data_servers
-            if s.get('network_type') != 'private' }))
+            if s.get('network_type') != 'private'}))
         provider['private_subnets'] = json.dumps(list({
             s['network'] for s in data_servers
             if s.get('network_type') == 'private'}))
