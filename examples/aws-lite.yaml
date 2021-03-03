@@ -2,6 +2,7 @@
 clouds:
   aws:
     region: "us-west-2"
+    az: "us-west-2a"
     vpc_network: 10.0.0.0/16
     ssh_key_path: "~/.ssh/id_rsa.pub"
 
@@ -11,13 +12,16 @@ clouds:
 
     servers:
       - server: web_server
-        os: centos-7
+        os: ubuntu-20.04
         size: t2.micro
         count: 3
         remote_command:
-          - sudo yum install -y docker
+          - sudo apt-get update
+          - curl -fsSL https://get.docker.com -o get-docker.sh
+          - sudo sh get-docker.sh
           - sudo systemctl start docker
           - sudo systemctl enable docker
+          - sudo usermod -aG docker ubuntu
           - sudo docker run -d --name web -p 80:80 nginx
         inbound_access:
           - from: all
@@ -29,27 +33,32 @@ clouds:
           - from: all
             port: 22-25
             protocol: tcp
+        outbound_access:
+          - to: all
         network: 10.0.0.0/24
         elastic: true
         tags:
           "Server Role": "Web-server"
-          OS: "CentOS-7"
+          OS: "Ubuntu-20"
 
       - server: database
         os: ubuntu-20.04
         size: t2.micro
         count: 1
-        remote_command:
-          - sudo apt-get update
-          - sudo apt-get install -y mariadb-server
-          - sudo systemctl start mariadb
-          - sudo systemctl enable mariadb
+#        remote_command:
+#          - sudo apt-get update
+#          - sudo apt-get install -y mariadb-server
+#          - sudo systemctl start mariadb
+#          - sudo systemctl enable mariadb
         inbound_access:
           - from: web_server
             port: 3306
             protocol: tcp
           - from: web_server
             port: 5431-5432
+            protocol: tcp
+          - from: bastion
+            port: 22
             protocol: tcp
         outbound_access:
           - to: all
@@ -64,3 +73,19 @@ clouds:
         network: 10.0.2.0/24
         network_type: private
         elastic: false
+
+      - server: bastion
+        os: ubuntu-20.04
+        size: t2.micro
+        count: 1
+        network: 10.0.0.0/24
+        elastic: true
+        tags:
+          "Server Role": "Bastion-server"
+          OS: "Ubuntu-20"
+        inbound_access:
+          - from: all
+            port: 22
+            protocol: tcp
+        outbound_access:
+          - to: all

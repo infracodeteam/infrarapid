@@ -26,6 +26,16 @@ variable "private_subnets" {
     type = list(string)
 }
 
+variable "public_subnet_az" {
+    description = "Availability Zones for public subnets"
+    type = string
+}
+
+variable "private_subnet_az" {
+    description = "Availability Zones for private subnets"
+    type = string
+}
+
 variable "ssh_key_path" {
   description = "Path to the local public SSH key"
   type     = string

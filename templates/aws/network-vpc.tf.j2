@@ -9,7 +9,7 @@ resource "aws_subnet" "public-subnet" {
 
   count = length(var.public_subnets)
   cidr_block = var.public_subnets[count.index]
-  # availability_zone = var.availability_zones[count.index]
+  availability_zone = var.public_subnet_az
 }
 
 resource "aws_internet_gateway" "router" {
@@ -39,7 +39,7 @@ resource "aws_subnet" "private-subnet" {
 
   count = length(var.private_subnets)
   cidr_block = var.private_subnets[count.index]
-  # availability_zone = var.availability_zones[count.index]
+  availability_zone = var.private_subnet_az
 }
 
 resource "aws_eip" "nat_private_eip" {

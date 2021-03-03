@@ -4,6 +4,7 @@ resource "aws_security_group" "{{ server.name }}-security-group" {
   description = "Used in the terraform"
   vpc_id      = aws_vpc.main.id
 {% for sec in server.security_groups %}
+{% if sec.direction == 'ingress' %}
   ingress {
     from_port   = {{ sec.from_port }}
     to_port     = {{ sec.to_port }}
@@ -11,13 +12,16 @@ resource "aws_security_group" "{{ server.name }}-security-group" {
     cidr_blocks = {{ sec.cidr_blocks|tojson }}{% endif %}{% if sec.security_groups %}
     security_groups = [aws_security_group.{{ sec.security_groups }}.id]{% endif %}
   }
-{% endfor %}
-  # outbound internet access
+{% elif sec.direction == 'egress' %}
+# outbound internet access
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = {{ sec.from_port }}
+    to_port     = {{ sec.to_port }}
+    protocol    = "{{ sec.protocol }}"{% if sec.cidr_blocks %}
+    cidr_blocks = {{ sec.cidr_blocks|tojson }}{% endif %}{% if sec.security_groups %}
+    security_groups = [aws_security_group.{{ sec.security_groups }}.id]{% endif %}
   }
+{% endif %}
+{% endfor %}
 }
 {% endfor %}

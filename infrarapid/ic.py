@@ -58,6 +58,7 @@ class ParseConfig:
         provider = {}
         provider['lb'] = []
         provider['region'] = self.data['region']
+        provider['az'] = self.data['az']
         provider['vpc_network'] = self.data['vpc_network']
         provider['ssh_key_path'] = self.data['ssh_key_path']
         data_servers = self.data.get('servers', [])
@@ -131,7 +132,7 @@ class ParseConfig:
 
             for rule in s.get('inbound_access', []):
                 sec_rule = {
-                    'protocol': rule.get('protocol', 'any'),
+                    'protocol': rule.get('protocol', '-1'),
                     'direction': 'ingress'}
                 ports = str(rule.get('port', ''))
                 if ports:
@@ -149,14 +150,27 @@ class ParseConfig:
                     sec_rule['security_groups'] = from_addr + '-security-group'
                 else:
                     sec_rule['cidr_blocks'] = from_addr
-                # to_addr = rule.get('to')
-                # if not from_addr or from_addr.lower() in ('all', 'any'):
-                #     sec_rule['cidr_blocks'] = ['0.0.0.0/0']
-                # elif from_addr in data_servers:
-                #     sec_rule['security_groups'] = [
-                #         from_addr + '-security-group']
-                # else:
-                #     sec_rule['cidr_blocks'] = from_addr
+                server['security_groups'].append(sec_rule)
+            for rule in s.get('outbound_access', []):
+                sec_rule = {
+                    'protocol': rule.get('protocol', '-1'),
+                    'direction': 'egress'}
+                ports = str(rule.get('port', ''))
+                if ports:
+                    if '-' in ports:
+                        (sec_rule['from_port'], sec_rule['to_port']
+                         ) = ports.split("-")
+                    else:
+                        sec_rule['from_port'] = sec_rule['to_port'] = ports
+                else:
+                    sec_rule['from_port'] = sec_rule['to_port'] = '0'
+                to_addr = rule.get('to')
+                if not to_addr or to_addr.lower() in ('all', 'any'):
+                    sec_rule['cidr_blocks'] = ['0.0.0.0/0']
+                elif to_addr in [i['server'] for i in data_servers]:
+                    sec_rule['security_groups'] = to_addr + '-security-group'
+                else:
+                    sec_rule['cidr_blocks'] = to_addr
                 server['security_groups'].append(sec_rule)
             servers.append(server)
         return {'servers': servers, 'provider': provider}
