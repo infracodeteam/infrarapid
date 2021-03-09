@@ -4,7 +4,7 @@ setuptools.setup(
     name="",
     version="0.0.1",
     author="InfraCode",
-    author_email="",
+    author_email="sergey@infrastructurecode.io",
     description="InfraRapid package",
     long_description="""Infrarapid tools allows you to create,
                         configure and deploy same infrastructure
