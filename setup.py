@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-    name="InfraRapid",
+    name="infrarapid",
     version="0.0.1",
     author="InfraCode",
     author_email="sergey@infrastructurecode.io",
@@ -19,6 +19,8 @@ setuptools.setup(
         "License :: OSI Approved :: Apache License",
         "Operating System :: OS Independent",
     ],
+    entry_points={'console_scripts': ['ic = infrarapid.ic:main']},
     packages=setuptools.find_packages(),
+    package_data={'infrarapid': ['templates/.*']},
     python_requires=">=3.6",
 )
