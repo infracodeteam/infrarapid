@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-    name="",
+    name="InfraRapid",
     version="0.0.1",
     author="InfraCode",
     author_email="sergey@infrastructurecode.io",
