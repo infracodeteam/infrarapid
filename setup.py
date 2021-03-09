@@ -1,19 +1,16 @@
 import setuptools
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-
 setuptools.setup(
     name="",
     version="0.0.1",
     author="InfraCode",
     author_email="",
     description="InfraRapid package",
-    long_description=long_description,
+    long_description="Infrarapid tools allows you to create, configure and deploy same infrastructure over multiple cloud providers",
     long_description_content_type="text/markdown",
     url="https://github.com/infracodeteam/infrarapid",
     project_urls={
-        "Bug Tracker": "",
+        "Bug Tracker": "https://github.com/infracodeteam/infrarapid/issues/",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
