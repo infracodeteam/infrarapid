@@ -6,7 +6,9 @@ setuptools.setup(
     author="InfraCode",
     author_email="",
     description="InfraRapid package",
-    long_description="Infrarapid tools allows you to create, configure and deploy same infrastructure over multiple cloud providers",
+    long_description="""Infrarapid tools allows you to create,
+                        configure and deploy same infrastructure
+                        over multiple cloud providers""",
     long_description_content_type="text/markdown",
     url="https://github.com/infracodeteam/infrarapid",
     project_urls={
