@@ -1,6 +1,7 @@
 azure_location = "eastus"
 main_cidr = ["{{ data.provider.vpc_network }}"]
 public_subnets = {{ data.provider.public_subnets }}
+private_subnets = {{ data.provider.private_subnets|default(0) }}
 ssh_key_path = "{{ data.provider.ssh_key_path }}"
 ssh_priv_key_path = "{{ data.provider.ssh_key_path | replace('.pub', '') }}"
 server_additional_tags = {}
