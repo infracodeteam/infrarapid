@@ -1,6 +1,7 @@
 clouds:
   azure:
     region: "us-east-2"
+    az: "zone1"
     vpc_network: 10.0.0.0/16
     ssh_key_path: "~/.ssh/id_rsa.pub"
 
@@ -18,11 +19,18 @@ clouds:
           - sudo systemctl start docker
           - sudo systemctl enable docker
           - sudo docker run -d --name web -p 80:80 nginx
-        external_access:
-          - http
-          - https
-          - ssh
-          - ping
+        inbound_access:
+          - from: all
+            port: 80
+            protocol: tcp
+          - from: all
+            port: 443
+            protocol: tcp
+          - from: all
+            port: 22-25
+            protocol: tcp
+        outbound_access:
+          - to: all
         network: 10.0.0.0/24
         elastic: true
         tags:
@@ -38,10 +46,41 @@ clouds:
           - sudo apt-get install -y apache2
           - sudo systemctl start apache2
           - sudo systemctl enable apache2
-        external_access:
-          - ssh
-          - ping
-          - 80/tcp
-          - 5432/tcp
+        inbound_access:
+          - from: web_server
+            port: 3306
+            protocol: tcp
+          - from: web_server
+            port: 5431-5432
+            protocol: tcp
+          - from: bastion
+            port: 22
+            protocol: tcp
+        outbound_access:
+          - to: all
+            port: 80
+            protocol: tcp
+          - to: all
+            port: 443
+            protocol: tcp
+          - to: all
+            port: 53
+            protocol: tcp
         network: 10.0.1.0/24
+        elastic: true
+
+      - server: bastion
+        os: ubuntu-20.04
+        size: Standard_F2
+        count: 1
+        tags:
+          "Server Role": "Bastion-server"
+          OS: "Ubuntu-20"
+        inbound_access:
+          - from: all
+            port: 22
+            protocol: tcp
+        outbound_access:
+          - to: all
+        network: 10.0.0.0/24
         elastic: true

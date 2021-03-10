@@ -2,6 +2,7 @@
 clouds:
   aws:
     region: "us-west-2"
+    az: "us-west-2a"
     vpc_network: 10.0.0.0/16
     ssh_key_path: "~/.ssh/id_rsa.pub"
 
@@ -32,10 +33,13 @@ clouds:
           - sudo mkdir /opt/html
           - echo \"<h1>This is a server</h1>\" | sudo tee /opt/html/index.html
           - sudo docker run -d --name web -v /opt/html:/usr/share/nginx/html -p 8000:80 nginx
-        external_access:
-          - 8000/tcp
-          - ssh
-          - ping
+        inbound_access:
+          - from: all
+            port: 8000
+            protocol: tcp
+          - from: all
+            port: 22
+            protocol: tcp
         network: 10.0.0.0/24
         elastic: true
         load_balancer: web_lb
