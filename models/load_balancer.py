@@ -1,0 +1,3 @@
+class LoadBalancer(object):
+    pass
+
